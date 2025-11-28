@@ -43,8 +43,6 @@ class StaticallyLaunchedTritonKernel:
         # pyrefly: ignore [missing-attribute]
         self.name = kernel.src.fn.__name__
         # pyrefly: ignore [missing-attribute]
-        self.cubin_raw = kernel.asm.get("cubin", None)
-        # pyrefly: ignore [missing-attribute]
         self.cubin_path = kernel._cubin_path
 
         # Used by torch.compile to filter constants in older triton versions
@@ -279,11 +277,31 @@ class StaticallyLaunchedCudaKernel(StaticallyLaunchedTritonKernel):
 
         return _StaticCudaLauncher
 
+    def __init__(self, kernel: CompiledKernel) -> None:
+        # pyrefly: ignore [missing-attribute]
+        self.cubin_raw = kernel.asm.get("cubin", None)
+        super().__init__(kernel)
+
+
+class StaticallyLaunchedXpuKernel(StaticallyLaunchedTritonKernel):
+    @cached_property
+    def C_impl(self):
+        from torch._C import _StaticXpuLauncher
+
+        return _StaticXpuLauncher
+
+    def __init__(self, kernel: CompiledKernel) -> None:
+        # pyrefly: ignore [missing-attribute]
+        self.cubin_raw = kernel.asm.get("zebin", None)
+        super().__init__(kernel)
+
 
 def statically_launched_kernel_by_device(
     kernel: CompiledKernel, device_type: str = "cuda"
 ) -> StaticallyLaunchedTritonKernel:
     if device_type == "cuda":
         return StaticallyLaunchedCudaKernel(kernel)
+    elif device_type == "xpu":
+        return StaticallyLaunchedXpuKernel(kernel)
     else:
         raise NotImplementedError(f"Device type {device_type} not supported")
