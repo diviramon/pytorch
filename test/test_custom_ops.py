@@ -891,7 +891,7 @@ class TestCustomOp(CustomOpTestCaseBase):
             return [3.14]
         if typ is bool:
             return [True]
-        if typ is str:
+        if typ is str or typ is torch.distributed.distributed_c10d.GroupName:
             return ["foo"]
         if typ is torch.dtype:
             return [torch.float32]
