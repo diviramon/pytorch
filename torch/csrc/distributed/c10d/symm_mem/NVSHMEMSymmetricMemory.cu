@@ -1,8 +1,8 @@
 #include <torch/csrc/distributed/c10d/cuda/utils.hpp>
-#include <torch/csrc/distributed/c10d/symm_mem/nvshmem_extension.cuh>
 #include <torch/csrc/distributed/c10d/symm_mem/CUDASymmetricMemory-inl.h>
 #include <torch/csrc/distributed/c10d/symm_mem/CUDASymmetricMemoryUtils.hpp>
 #include <torch/csrc/distributed/c10d/symm_mem/SymmetricMemory.hpp>
+#include <torch/csrc/distributed/c10d/symm_mem/nvshmem_extension.cuh>
 
 #include <ATen/ceil_div.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -92,6 +92,7 @@ class NVSHMEMPeerAllocInfo : public c10::intrusive_ptr_target {
     }
 
     // TODO: use the same allocation for signal pad
+    const size_t signal_pad_size = get_signal_pad_size();
     void* signal_pad_ptr = nvshmem_malloc(signal_pad_size);
     TORCH_CHECK(signal_pad_ptr != nullptr, "nvshmem_malloc failed");
     AT_CUDA_CHECK(cudaMemset(signal_pad_ptr, 0, signal_pad_size));
@@ -190,7 +191,7 @@ class NVSHMEMSymmetricMemory : public SymmetricMemory {
   }
 
   size_t get_signal_pad_size() override {
-    return signal_pad_size;
+    return c10d::symmetric_memory::get_signal_pad_size();
   };
 
   bool has_multicast_support() override {

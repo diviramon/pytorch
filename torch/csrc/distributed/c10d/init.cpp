@@ -1138,6 +1138,12 @@ This class does not support ``__members__`` property.)");
       .def_static("set_backend", &::c10d::symmetric_memory::set_backend)
       .def_static("get_backend", &::c10d::symmetric_memory::get_backend)
       .def_static(
+          "set_signal_pad_size",
+          &::c10d::symmetric_memory::set_signal_pad_size,
+          py::arg("size"))
+      .def_static(
+          "get_signal_pad_size", &::c10d::symmetric_memory::get_signal_pad_size)
+      .def_static(
           "get_mempool_allocator",
           &::c10d::symmetric_memory::get_mempool_allocator)
       .def_property_readonly("rank", &SymmetricMemory::get_rank)
